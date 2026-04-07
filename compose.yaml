@@ -1,6 +1,6 @@
 services:
   php:
-    image: 'ghcr.io/koza4ok/php-helloworld:latest'
+    image: 'php:8-fpm:latest'
     stop_grace_period: 20s
     networks:
       - overlay
