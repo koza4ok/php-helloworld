@@ -1,9 +1,10 @@
 services:
   php:
-    image: 'php:8-fpm:latest'
+    # Fixed the image tag
+    image: 'php:8-fpm'
     stop_grace_period: 20s
     networks:
-      - overlay
+      - coolify-overlay
     deploy:
       replicas: 2
       update_config:
@@ -13,10 +14,19 @@ services:
       labels:
         - traefik.enable=true
         - traefik.http.routers.secubi-php.rule=Host(`your-domain.com`)
-        - traefik.http.services.secubi-php.loadbalancer.server.port=80
+        - traefik.http.routers.secubi-php.entrypoints=http
+        # IMPORTANT: PHP-FPM runs on 9000. 
+        # If you aren't using an Nginx/Caddy container, Traefik needs to hit 9000.
+        - traefik.http.services.secubi-php.loadbalancer.server.port=9000
     healthcheck:
-      test: ["CMD", "php", "-v"]
+      # Testing if the PHP process is responsive
+      test: ["CMD", "php-fpm", "-t"] 
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 15s # Gives PHP time to boot before checking
+      start_period: 15s
+
+networks:
+  # This section tells Swarm to use the existing network Coolify created
+  coolify-overlay:
+    external: true
